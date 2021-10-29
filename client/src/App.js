@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { AppBar, Toolbar, Box, Typography, CircularProgress } from '@mui/material';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 import PinkyPromiseContract from "./contracts/PinkyPromise.json";
 import getWeb3 from "./getWeb3";
@@ -48,7 +49,6 @@ class App extends Component {
     try {
       const response = await contract.methods.getCurrentUser().call({ from: this.state.account });
       const user = PinkyUserRecord.toJson(response);
-      console.log(user);
       if (user.id !== 0) {
         this.setState({ pinkyUser: user });
       } else {
@@ -61,18 +61,10 @@ class App extends Component {
     }
   }
 
-  loadPinkyPromises = async () => {
-    const { contract } = this.state;
-    const response = await contract.methods.getAllPromisesViewableByUser().call({ from: this.state.account });
-    console.log(response);
-    this.setState({ allPinkyPromises: response });
-  };
-
   addNewUser = async (name) => {
     const { contract } = this.state;
     try {
       await contract.methods.addUser(name).send({ from: this.state.account });
-      console.log('user added');
     } catch (error) {
       console.error(error);
     }
@@ -84,16 +76,17 @@ class App extends Component {
         {!this.state.web3 ? <CircularProgress /> :
         (<>
           <AppBar position="static">
-            <Toolbar style={{display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'column' }}>
-              <span style={{float: 'left'}}>
+            <Toolbar style={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'column' }}>
+              <span style={{ float: 'left', display: 'flex', flex: 1, flexGrow: 1 }}>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                   Pinky Promise
                 </Typography>
               </span>
-              <span style={{float: 'right'}}>
-                <Typography variant="subtitle1" component="div" sx={{ flexGrow: 1 }}>
+              <span style={{ float: 'right', display: 'flex', flexDirection: 'row' }}>
+                <Typography variant="subtitle1" component="div" sx={{ flexGrow: 1 }} marginRight={2}>
                   {this.state.account}
                 </Typography>
+                <AccountCircleIcon />
               </span>
             </Toolbar>
           </AppBar>

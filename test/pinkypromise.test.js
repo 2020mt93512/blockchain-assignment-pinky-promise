@@ -49,13 +49,15 @@ contract("PinkyPromise", accounts => {
 	});
 
 	describe('promises management', async () => {
+		let futureTimeStamp;
 		before(async () => {
 			// test user for trying promise addition
 			await pinkyPromiseInstance.addUser('test user 3', { from: accounts[2] });
-			await pinkyPromiseInstance.addPromise('promise title 1', 'promise description 1', 2, { from: accounts[0] });
-			await pinkyPromiseInstance.addPromise('promise title 2', 'promise description 2', 2, { from: accounts[0] });
-			await pinkyPromiseInstance.addPromise('promise title 3', 'promise description 3', 1, { from: accounts[2] });
-			await pinkyPromiseInstance.addPromise('promise title 4', 'promise description 4', 1, { from: accounts[1] });
+			futureTimeStamp = Date.now() + 600000;
+			await pinkyPromiseInstance.addPromise('promise title 1', 'promise description 1', 2, futureTimeStamp, { from: accounts[0] });
+			await pinkyPromiseInstance.addPromise('promise title 2', 'promise description 2', 2, futureTimeStamp, { from: accounts[0] });
+			await pinkyPromiseInstance.addPromise('promise title 3', 'promise description 3', 1, 0, { from: accounts[2] });
+			await pinkyPromiseInstance.addPromise('promise title 4', 'promise description 4', 1, Date.now(), { from: accounts[1] });
 		});
 
 		it('should add a new promise for the user', async () => {
@@ -67,6 +69,7 @@ contract("PinkyPromise", accounts => {
 			assert.equal(firstPromise.description, 'promise description 1');
 			assert.equal(firstPromise.sharingUserId.toNumber(), 1);
 			assert.equal(firstPromise.receivingUserId.toNumber(), 2);
+			assert.equal(firstPromise.expiresIn.toNumber(), futureTimeStamp);
 
 			user = await pinkyPromiseInstance.users(1);
 			assert.equal(user.totalPromises, 2);
@@ -91,6 +94,20 @@ contract("PinkyPromise", accounts => {
 			const user3Promises = await pinkyPromiseInstance.getAllPromisesViewableByUser({ from: accounts[2] });
 			assert.equal(user3Promises.length, 1);
 			assert.deepEqual(user3Promises.map(item => item[0]), ['3']);
+		});
+
+		it('should complete a promise as the sharing user', async () => {
+			await pinkyPromiseInstance.completePromiseAsSharingUser(1, { from: accounts[0] });
+			const promise1 = await pinkyPromiseInstance.promises(1);
+			assert.equal(promise1.completedBySharingUser, true);
+			assert.notEqual(promise1.completedBySharingUserAt.toNumber(), 0);
+		});
+
+		it('should complete a promise as the receiving user', async () => {
+			await pinkyPromiseInstance.completePromiseAsReceivingUser(1, { from: accounts[1] });
+			const promise1 = await pinkyPromiseInstance.promises(1);
+			assert.equal(promise1.completedByReceivingUser, true);
+			assert.notEqual(promise1.completedByReceivingUserAt.toNumber(), 0);
 		});
 	});
 });

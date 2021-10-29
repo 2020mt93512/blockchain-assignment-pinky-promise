@@ -7,7 +7,6 @@ import ViewAllPromises from './ViewAllPromises';
 import ViewMyPromises from './ViewMyPromises';
 import AddPromiseModal from './AddPromiseModal';
 
-import { PinkyPromiseRecord } from '../models/PinkyPromiseRecord';
 import { PinkyUserRecord } from '../models/PinkyUserRecord';
 
 function a11yProps(index) {
@@ -18,29 +17,40 @@ function a11yProps(index) {
 }
 
 class Dashboard extends Component {
-	state = { currentTabIdx : 0, promisesList: [], addPromiseFormOpen: false, usersList: [] };
+	state = { currentTabIdx : 0, addPromiseFormOpen: false, usersList: [] };
 
 	componentDidMount() {
 		this.getUsersList();
-		this.getAllPinkyPromises();
 	}
 
 	getUsersList = async () => {
 		const { contract } = this.props;
 		try {
       const response = await contract.methods.getViewableUsers().call({ from: this.props.account });
-      console.log(response.map(PinkyUserRecord.toJson));
 			this.setState({ usersList: response.map(PinkyUserRecord.toJson) });
     } catch (error) {
       console.error(error);
     }
 	}
 
-	getAllPinkyPromises = async () => {
+	addNewPromise = async (title, description, receivingUserId, expiresIn) => {
 		const { contract } = this.props;
 		try {
-      const response = await contract.methods.getAllPromisesViewableByUser().call({ from: this.props.account });
-      this.setState({ promisesList: response.map(PinkyPromiseRecord.toJson) });
+      await contract.methods.addPromise(title, description, receivingUserId, expiresIn.unix()).send({ from: this.props.account });
+			this.handleAddPromiseFormClose();
+    } catch (error) {
+      console.error(error);
+    }
+	}
+
+	completePromise = async (promiseId, isSharingUser) => {
+		const { contract } = this.props;
+		try {
+			if (isSharingUser) {
+				await contract.methods.completePromiseAsSharingUser(promiseId).send({ from: this.props.account });
+			} else {
+				await contract.methods.completePromiseAsReceivingUser(promiseId).send({ from: this.props.account });
+			}
     } catch (error) {
       console.error(error);
     }
@@ -58,16 +68,6 @@ class Dashboard extends Component {
 		this.setState({ addPromiseFormOpen: false });
 	};
 
-	addNewPromise = async (title, description, receivingUserId) => {
-		const { contract } = this.props;
-		try {
-      await contract.methods.addPromise(title, description, receivingUserId).send({ from: this.props.account });
-			this.handleAddPromiseFormClose();
-    } catch (error) {
-      console.error(error);
-    }
-	}
-
 	render() {
 		return (
 			<Box padding={8}>
@@ -81,15 +81,15 @@ class Dashboard extends Component {
 							onChange={this.handleTabChange}
 							variant="fullWidth"
 						>
-							<Tab label="All Promises" {...a11yProps(0)} />
-							<Tab label="Your Promises" {...a11yProps(1)} />
+							<Tab label="Your Promises" {...a11yProps(0)} />
+							<Tab label="All Promises" {...a11yProps(1)} />
 						</Tabs>
 					</Box>
 					<TabPanel value={this.state.currentTabIdx} index={0}>
-						<ViewAllPromises {...this.props} promisesList={this.state.promisesList} />
+						<ViewMyPromises {...this.props} completePromise={this.completePromise} />
 					</TabPanel>
 					<TabPanel value={this.state.currentTabIdx} index={1}>
-						<ViewMyPromises {...this.props} />
+						<ViewAllPromises {...this.props} completePromise={this.completePromise} />
 					</TabPanel>
 				</Stack>
 				<Fab color="primary" aria-label="add" sx={{ position: 'absolute', right: 16, bottom: 16 }} onClick={this.handleAddPromiseFormOpen}>

@@ -10,14 +10,17 @@ contract PinkyPromise {
         string title;
         string description;
         uint256 createdAt;
-        // indicates whether the sharing user has marked the promise as complete
-        bool completedBySharingUser;
-        // indicates whether the receiving user has marked the promise as complete
-        bool completedByReceivingUser;
         // the user who created the promise
         uint256 sharingUserId;
+        // indicates whether the sharing user has marked the promise as complete
+        bool completedBySharingUser;
+        uint256 completedBySharingUserAt;
         // the user with who the promise must be shared
         uint256 receivingUserId;
+        // indicates whether the receiving user has marked the promise as complete
+        bool completedByReceivingUser;
+        uint256 completedByReceivingUserAt;
+        uint256 expiresIn;
     }
 
     struct PinkyUserRecord {
@@ -95,7 +98,8 @@ contract PinkyPromise {
     function addPromise(
         string memory _title,
         string memory _description,
-        uint256 _receivingUserId
+        uint256 _receivingUserId,
+        uint256 _expiresIn
     ) public {
         uint256 _sharingUserId = userIdByAddr[msg.sender];
         require(msg.sender != address(0));
@@ -108,10 +112,13 @@ contract PinkyPromise {
             _title,
             _description,
             now,
-            false,
-            false,
             _sharingUserId,
-            _receivingUserId
+            false,
+            0,
+            _receivingUserId,
+            false,
+            0,
+            _expiresIn
         );
 
         users[_sharingUserId].totalPromises++;
@@ -141,18 +148,24 @@ contract PinkyPromise {
         uint256 _userId = userIdByAddr[msg.sender];
         require(_promiseId != 0 && _promiseId <= promisesCount);
         require(_userId != 0 && _userId <= usersCount);
+        require(promises[_promiseId].sharingUserId == _userId);
+        require(promises[_promiseId].expiresIn >= now);
         require(!promises[_promiseId].completedBySharingUser);
 
         promises[_promiseId].completedBySharingUser = true;
+        promises[_promiseId].completedBySharingUserAt = now;
     }
 
     function completePromiseAsReceivingUser(uint256 _promiseId) public {
         uint256 _userId = userIdByAddr[msg.sender];
         require(_promiseId != 0 && _promiseId <= promisesCount);
         require(_userId != 0 && _userId <= usersCount);
+        require(promises[_promiseId].receivingUserId == _userId);
+        require(promises[_promiseId].expiresIn >= now);
         require(!promises[_promiseId].completedByReceivingUser);
 
         promises[_promiseId].completedByReceivingUser = true;
+        promises[_promiseId].completedByReceivingUserAt = now;
     }
 
     function getAllPromisesViewableByUser()

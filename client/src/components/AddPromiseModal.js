@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
+import * as moment from 'moment';
 import { Modal, TextField, Button, Box, Stack, Typography, MenuItem } from '@mui/material';
+import AdapterMoment from '@mui/lab/AdapterMoment';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import DateTimePicker from '@mui/lab/DateTimePicker';
 
 class AddPromiseModal extends Component {
-	state = { title: '', description: '', receivingUserId: 0 };
+	state = { title: '', description: '', receivingUserId: 0, expiresIn: null };
 
 	onTitleChange = (event) => {
 		this.setState({ title: event.target.value });
@@ -14,6 +18,10 @@ class AddPromiseModal extends Component {
 
 	onReceivingUserIdChange = (event) => {
 		this.setState({ receivingUserId: event.target.value });
+	}
+
+	onExpiresInChange = (newValue) => {
+		this.setState({ expiresIn: newValue });
 	}
 
 	render() {
@@ -31,14 +39,13 @@ class AddPromiseModal extends Component {
 						height: 500,
 						width: 700,
 						bgcolor: 'background.paper',
-						border: '2px solid #000',
 						boxShadow: 24,
 						p: 4,
 					}}>
-						<Typography variant="h6" component="h2">
-							Add new promise
+						<Typography variant="h6" component="div">
+							Add a new <Typography variant="h6" color="primary" component="span">Pinky Promise</Typography>
 						</Typography>
-						<Stack spacing={2} direction="column" padding={8}>
+						<Stack spacing={4} direction="column" padding={2}>
 							<TextField
 								id="title"
 								label="Title"
@@ -67,11 +74,19 @@ class AddPromiseModal extends Component {
 									</MenuItem>
 								))}
 							</TextField>
+							<LocalizationProvider dateAdapter={AdapterMoment}>
+								<DateTimePicker
+									renderInput={(props) => <TextField {...props} helperText={this.state.expiresIn ? moment(this.state.expiresIn).fromNow() : 'No Expiry'} />}
+									label="Expires In"
+									value={this.state.expiresIn}
+									onChange={this.onExpiresInChange}
+								/>
+							</LocalizationProvider>
 							<Stack spacing={2} direction="row" justifyContent="center">
 								<Button variant="outlined" onClick={this.props.handleAddPromiseFormClose}>Cancel</Button>
 								<Button
 									variant="contained"
-									onClick={() => this.props.addNewPromise(this.state.title, this.state.description, this.state.receivingUserId)}
+									onClick={() => this.props.addNewPromise(this.state.title, this.state.description, this.state.receivingUserId, this.state.expiresIn)}
 									disabled={!this.state.title || !this.state.description || !this.state.receivingUserId}
 								>
 									Add

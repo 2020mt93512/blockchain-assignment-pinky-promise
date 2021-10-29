@@ -5,7 +5,7 @@ const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
+    <Box
       role="tabpanel"
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
@@ -13,11 +13,11 @@ const TabPanel = (props) => {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3, height: 500 }}>
-          <Typography>{children}</Typography>
+        <Box sx={{ p: 3, height: 540, overflow: 'scroll' }}>
+          <Typography component="div">{children}</Typography>
         </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
