@@ -50,6 +50,11 @@ contract PinkyPromise {
      *
      **************************************************************************/
 
+    function getCurrentUser() public view returns (PinkyUserRecord memory) {
+        require(msg.sender != address(0));
+        return users[userIdByAddr[msg.sender]];
+    }
+
     function addUser(string memory _name) public {
         require(msg.sender != address(0));
         usersCount++;
