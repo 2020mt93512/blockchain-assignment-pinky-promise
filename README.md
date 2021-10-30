@@ -17,6 +17,7 @@ A video demonstration of the application can be found [here](https://drive.googl
 - [Pinky Promise](#pinky-promise)
 	- [Table of Contents](#table-of-contents)
 	- [Screenshots](#screenshots)
+	- [Project Diagram](#project-diagram)
 	- [Setting up the environment](#setting-up-the-environment)
 	- [Running the project](#running-the-project)
 	- [Setting up the project](#setting-up-the-project)
