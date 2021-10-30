@@ -13,7 +13,7 @@ const TabPanel = (props) => {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 1, height: 590, overflow: 'scroll' }}>
+        <Box sx={{ p: 1, height: 690, overflow: 'scroll' }}>
           <Typography component="div">{children}</Typography>
         </Box>
       )}
