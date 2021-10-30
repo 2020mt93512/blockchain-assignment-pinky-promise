@@ -6,37 +6,23 @@ import TabPanel from './TabPanel';
 import ViewAllPromises from './ViewAllPromises';
 import ViewMyPromises from './ViewMyPromises';
 import AddPromiseModal from './AddPromiseModal';
+import GlobalState from '../utils/GlobalState';
+import { PinkyPromiseContext } from '../context/PinkyPromiseContext';
 
-import { PinkyUserRecord } from '../models/PinkyUserRecord';
-
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
+const a11yProps = (index) => ({
+	id: `simple-tab-${index}`,
+	'aria-controls': `simple-tabpanel-${index}`,
+});
 
 class Dashboard extends Component {
-	state = { currentTabIdx : 0, addPromiseFormOpen: false, usersList: [] };
-
-	componentDidMount() {
-		this.getUsersList();
-	}
-
-	getUsersList = async () => {
-		const { contract } = this.props;
-		try {
-      const response = await contract.methods.getViewableUsers().call({ from: this.props.account });
-			this.setState({ usersList: response.map(PinkyUserRecord.toJson) });
-    } catch (error) {
-      console.error(error);
-    }
-	}
+	static contextType = PinkyPromiseContext;
+	state = { currentTabIdx : 0, addPromiseFormOpen: false };
 
 	addNewPromise = async (title, description, receivingUserId, expiresIn) => {
-		const { contract } = this.props;
+		const contract = GlobalState.getContract();
 		try {
-      await contract.methods.addPromise(title, description, receivingUserId, expiresIn.unix()).send({ from: this.props.account });
+      await contract.methods.addPromise(title, description, receivingUserId, expiresIn ? expiresIn.unix() : 0)
+				.send({ from: GlobalState.getAccount() });
 			this.handleAddPromiseFormClose();
     } catch (error) {
       console.error(error);
@@ -44,12 +30,12 @@ class Dashboard extends Component {
 	}
 
 	completePromise = async (promiseId, isSharingUser) => {
-		const { contract } = this.props;
+		const contract = GlobalState.getContract();
 		try {
 			if (isSharingUser) {
-				await contract.methods.completePromiseAsSharingUser(promiseId).send({ from: this.props.account });
+				await contract.methods.completePromiseAsSharingUser(promiseId).send({ from: GlobalState.getAccount() });
 			} else {
-				await contract.methods.completePromiseAsReceivingUser(promiseId).send({ from: this.props.account });
+				await contract.methods.completePromiseAsReceivingUser(promiseId).send({ from: GlobalState.getAccount() });
 			}
     } catch (error) {
       console.error(error);
@@ -61,7 +47,9 @@ class Dashboard extends Component {
   };
 
 	handleAddPromiseFormOpen = () => {
-		this.setState({ addPromiseFormOpen: true });
+		this.context.getUsersList().then(() => {
+			this.setState({ addPromiseFormOpen: true });
+		});
 	};
 
 	handleAddPromiseFormClose = () => {
@@ -73,7 +61,7 @@ class Dashboard extends Component {
 			<Box padding={8}>
 				<Stack spacing={2} direction="column" justifyContent="center" alignItems="center">
 					<Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
-            Hello, {this.props.user.name}
+            Hello, {this.context.user.name}
           </Typography>
 					<Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
 						<Tabs
@@ -95,7 +83,7 @@ class Dashboard extends Component {
 				<Fab color="primary" aria-label="add" sx={{ position: 'absolute', right: 16, bottom: 16 }} onClick={this.handleAddPromiseFormOpen}>
 					<AddIcon />
 				</Fab>
-				<AddPromiseModal open={this.state.addPromiseFormOpen} handleAddPromiseFormClose={this.handleAddPromiseFormClose} usersList={this.state.usersList} addNewPromise={this.addNewPromise} />
+				<AddPromiseModal open={this.state.addPromiseFormOpen} handleAddPromiseFormClose={this.handleAddPromiseFormClose} addNewPromise={this.addNewPromise} />
 			</Box>
 		)
 	}

@@ -5,8 +5,11 @@ import AdapterMoment from '@mui/lab/AdapterMoment';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import DateTimePicker from '@mui/lab/DateTimePicker';
 
+import { PinkyPromiseContext } from '../context/PinkyPromiseContext';
+
 class AddPromiseModal extends Component {
-	state = { title: '', description: '', receivingUserId: 0, expiresIn: null };
+	static contextType = PinkyPromiseContext;
+	state = { title: '', description: '', receivingUserId: '', expiresIn: null };
 
 	onTitleChange = (event) => {
 		this.setState({ title: event.target.value });
@@ -22,6 +25,11 @@ class AddPromiseModal extends Component {
 
 	onExpiresInChange = (newValue) => {
 		this.setState({ expiresIn: newValue });
+	}
+
+	handleClick = async () => {
+		await this.props.addNewPromise(this.state.title, this.state.description, this.state.receivingUserId, this.state.expiresIn);
+		this.setState({ title: '', description: '', receivingUserId: 0, expiresIn: null });
 	}
 
 	render() {
@@ -52,6 +60,7 @@ class AddPromiseModal extends Component {
 								variant="outlined"
 								value={this.state.title}
 								onChange={this.onTitleChange}
+								required
 							/>
 							<TextField
 								id="description"
@@ -59,6 +68,7 @@ class AddPromiseModal extends Component {
 								variant="outlined"
 								value={this.state.description}
 								onChange={this.onDescriptionChange}
+								required
 							/>
 							<TextField
 								id="select-receiving-user-id"
@@ -66,9 +76,10 @@ class AddPromiseModal extends Component {
 								label="Select Receiving User Id"
 								value={this.state.receivingUserId}
 								onChange={this.onReceivingUserIdChange}
-								disabled={!this.props.usersList.length}
+								disabled={!this.context.usersList.length}
+								required
 							>
-								{this.props.usersList.map((user) => (
+								{this.context.usersList.map((user) => (
 									<MenuItem key={user.addr} value={user.id}>
 										{user.name} ({user.addr})
 									</MenuItem>
@@ -86,7 +97,7 @@ class AddPromiseModal extends Component {
 								<Button variant="outlined" onClick={this.props.handleAddPromiseFormClose}>Cancel</Button>
 								<Button
 									variant="contained"
-									onClick={() => this.props.addNewPromise(this.state.title, this.state.description, this.state.receivingUserId, this.state.expiresIn)}
+									onClick={this.handleClick}
 									disabled={!this.state.title || !this.state.description || !this.state.receivingUserId}
 								>
 									Add
