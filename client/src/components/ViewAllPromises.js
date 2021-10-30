@@ -28,8 +28,8 @@ class ViewAllPromises extends Component {
 		))
 
 		return this.context.allPromises.length > 0 ?
-			(<Box>
-				<Stack spacing={2}>
+			(<Box minWidth={500}>
+				<Stack spacing={2} alignItems="flex-end">
 					<FormControlLabel
 						control={
 							<Switch
@@ -40,16 +40,22 @@ class ViewAllPromises extends Component {
 						}
 						label="Show only incomplete"
 					/>
-					{filteredAllPromises.sort((a, b) => b.id - a.id).map(promiseItem => (
-						<PinkyPromiseCard
-							key={promiseItem.id}
-							{...promiseItem}
-							userId={this.context.user.id}
-							sharingUserName={this.getUserNameFromId(promiseItem.sharingUserId)}
-							receivingUserName={this.getUserNameFromId(promiseItem.receivingUserId)}
-							completePromise={this.props.completePromise}
-						/>
-					))}
+					{filteredAllPromises.length > 0 ?
+						(filteredAllPromises.sort((a, b) => b.id - a.id).map(promiseItem => (
+							<PinkyPromiseCard
+								key={promiseItem.id}
+								{...promiseItem}
+								userId={this.context.user.id}
+								sharingUserName={this.getUserNameFromId(promiseItem.sharingUserId)}
+								receivingUserName={this.getUserNameFromId(promiseItem.receivingUserId)}
+								completePromise={this.props.completePromise}
+							/>
+						))) : (<Box>
+							<Typography variant="overline" display="block">
+								No promises found
+							</Typography>
+						</Box>)
+					}
 				</Stack>
 			</Box>) :
 			(<Box>

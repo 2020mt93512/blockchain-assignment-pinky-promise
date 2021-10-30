@@ -21,6 +21,9 @@ const pinkyPromiseState = {
 	},
 	getCurrentUser: async () => {
 		console.error('Programming error: function not implemented yet!');
+	},
+	getUsersList: async () => {
+		console.error('Programming error: function not implemented yet!');
 	}
 };
 
@@ -52,7 +55,7 @@ const PinkyPromiseProvider = ({ children }) => {
 	const getUsersList = React.useCallback(async () => {
 		const contract = GlobalState.getContract();
 		try {
-      const response = await contract.methods.getViewableUsers().call({ from: GlobalState.getAccount() });
+			const response = await contract.methods.getViewableUsers().call({ from: GlobalState.getAccount() });
 			setState(oldState => ({ ...oldState, usersList: response.map(PinkyUserRecord.toJson) }));
     } catch (error) {
       console.error(error);
@@ -108,8 +111,8 @@ const PinkyPromiseProvider = ({ children }) => {
 					if (allPromiseItemIdx !== -1) {
 						const newPromise = {
 							...newAllPromises[allPromiseItemIdx],
-							completedBySharingUser: !!completedBySharingUserAt,
-							completedBySharingUserAt: +completedBySharingUserAt
+							completedBySharingUser: true,
+							completedBySharingUserAt: (+completedBySharingUserAt * 1000)
 						};
 						newAllPromises.splice(allPromiseItemIdx, 1, newPromise);
 					}
@@ -117,7 +120,7 @@ const PinkyPromiseProvider = ({ children }) => {
 						const newPromise = {
 							...newMyPromises[myPromiseItemIdx],
 							completedBySharingUser: true,
-							completedBySharingUserAt: +completedBySharingUserAt
+							completedBySharingUserAt: (+completedBySharingUserAt * 1000)
 						};
 						newMyPromises.splice(myPromiseItemIdx, 1, newPromise);
 					}
@@ -141,7 +144,7 @@ const PinkyPromiseProvider = ({ children }) => {
 						const newPromise = {
 							...newAllPromises[allPromiseItemIdx],
 							completedByReceivingUser: true,
-							completedByReceivingUserAt: +completedByReceivingUserAt
+							completedByReceivingUserAt: (+completedByReceivingUserAt) * 1000
 						};
 						newAllPromises.splice(allPromiseItemIdx, 1, newPromise);
 					}
@@ -149,7 +152,7 @@ const PinkyPromiseProvider = ({ children }) => {
 						const newPromise = {
 							...newMyPromises[myPromiseItemIdx],
 							completedByReceivingUser: true,
-							completedByReceivingUserAt: +completedByReceivingUserAt
+							completedByReceivingUserAt: (+completedByReceivingUserAt) * 1000
 						};
 						newMyPromises.splice(myPromiseItemIdx, 1, newPromise);
 					}
@@ -158,7 +161,7 @@ const PinkyPromiseProvider = ({ children }) => {
 				return oldState;
 			});
 		});
-	}, []);
+	}, [setUser]);
 
 	const loadBlockchainData = React.useCallback(async () => {
 		setState(oldState => ({ ...oldState, loading: true }));
@@ -166,10 +169,8 @@ const PinkyPromiseProvider = ({ children }) => {
 		await getMyPinkyPromises();
 		// get all promises
 		await getAllPinkyPromises();
-		// get users list
-		await getUsersList();
 		setState(oldState => ({ ...oldState, loading: false }));
-	}, [getMyPinkyPromises, getAllPinkyPromises, getUsersList]);
+	}, [getMyPinkyPromises, getAllPinkyPromises]);
 
 	const getCurrentUser = React.useCallback(async () => {
 		const contract = GlobalState.getContract();
@@ -197,7 +198,8 @@ const PinkyPromiseProvider = ({ children }) => {
 				loadBlockchainData,
 				setUser,
 				registerEventSubscriptions,
-				getCurrentUser
+				getCurrentUser,
+				getUsersList
 			}}
 		>
 			{children}

@@ -9,7 +9,7 @@ import { PinkyPromiseContext } from '../context/PinkyPromiseContext';
 
 class AddPromiseModal extends Component {
 	static contextType = PinkyPromiseContext;
-	state = { title: '', description: '', receivingUserId: 0, expiresIn: null };
+	state = { title: '', description: '', receivingUserId: '', expiresIn: null };
 
 	onTitleChange = (event) => {
 		this.setState({ title: event.target.value });

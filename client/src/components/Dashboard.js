@@ -47,7 +47,9 @@ class Dashboard extends Component {
   };
 
 	handleAddPromiseFormOpen = () => {
-		this.setState({ addPromiseFormOpen: true });
+		this.context.getUsersList().then(() => {
+			this.setState({ addPromiseFormOpen: true });
+		});
 	};
 
 	handleAddPromiseFormClose = () => {

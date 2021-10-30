@@ -37,7 +37,7 @@ class NewUser extends Component {
 								value={this.state.name}
 								onChange={this.onNameChange}
 							/>
-							<Button variant="contained" onClick={() => this.addNewUser()}>Join</Button>
+							<Button variant="contained" onClick={this.addNewUser}>Join</Button>
 						</Stack>
 				</Stack>
 			</Box>
