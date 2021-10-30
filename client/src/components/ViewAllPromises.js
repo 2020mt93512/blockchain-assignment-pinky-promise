@@ -23,8 +23,8 @@ class ViewAllPromises extends Component {
 	render() {
 		const filteredAllPromises = this.context.allPromises.filter(item => !this.state.showOnlyIncomplete || (
 			!(item.expiresIn !== 0 && Date.now() - item.expiresIn >= 0) &&
-				(this.context.user.id === item.sharingUserId ? !item.completedBySharingUser :
-					(this.context.user.id === item.receivingUserId ? !item.completedByReceivingUser : false))
+				(this.context.user.id === item.sharingUserId ? !item.completedBySharingUserAt :
+					(this.context.user.id === item.receivingUserId ? !item.completedByReceivingUserAt : false))
 		))
 
 		return this.context.allPromises.length > 0 ?
@@ -48,7 +48,7 @@ class ViewAllPromises extends Component {
 								userId={this.context.user.id}
 								sharingUserName={this.getUserNameFromId(promiseItem.sharingUserId)}
 								receivingUserName={this.getUserNameFromId(promiseItem.receivingUserId)}
-								completePromise={this.props.completePromise}
+								onClickCompletePromise={this.props.onClickCompletePromise}
 							/>
 						))) : (<Box>
 							<Typography variant="overline" display="block">

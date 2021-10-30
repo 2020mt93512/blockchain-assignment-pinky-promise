@@ -12,18 +12,18 @@ contract PinkyPromise {
         uint256 createdAt;
         // the user who created the promise
         uint256 sharingUserId;
-        // indicates whether the sharing user has marked the promise as complete
-        bool completedBySharingUser;
         // indicates whether the sharing user marked the promise as complete
         uint256 completedBySharingUserAt;
         // the user with who the promise must be shared
         uint256 receivingUserId;
-        // indicates whether the receiving user has marked the promise as complete
-        bool completedByReceivingUser;
         // indicates whether the receving user marked the promise as complete
         uint256 completedByReceivingUserAt;
         // indicates time beyond with the promise cannot be marked as complete
         uint256 expiresIn;
+        // the hash for the image proof of sharing user completing the promise, stored in IPFS
+        string sharingUserImgHash;
+        // the hash for the image proof of receiving user completing the promise, stored in IPFS
+        string receivingUserImgHash;
     }
 
     struct PinkyUserRecord {
@@ -65,22 +65,22 @@ contract PinkyPromise {
         string description,
         uint256 createdAt,
         uint256 indexed sharingUserId,
-        bool completedBySharingUser,
         uint256 completedBySharingUserAt,
         uint256 indexed receivingUserId,
-        bool completedByReceivingUser,
         uint256 completedByReceivingUserAt,
         uint256 expiresIn
     );
 
     event PinkyPromiseCompletedBySharingUser(
         uint256 promiseId,
-        uint256 completedBySharingUserAt
+        uint256 completedBySharingUserAt,
+        string imgHash
     );
 
     event PinkyPromiseCompletedByReceivingUser(
         uint256 promiseId,
-        uint256 completedByReceivingUserAt
+        uint256 completedByReceivingUserAt,
+        string imgHash
     );
 
     /**************************************************************************
@@ -155,12 +155,12 @@ contract PinkyPromise {
             _description,
             now,
             _sharingUserId,
-            false,
             0,
             _receivingUserId,
-            false,
             0,
-            _expiresIn
+            _expiresIn,
+            "",
+            ""
         );
 
         emit PinkyPromiseRecordAdded(
@@ -169,16 +169,17 @@ contract PinkyPromise {
             _description,
             now,
             _sharingUserId,
-            false,
             0,
             _receivingUserId,
-            false,
             0,
             _expiresIn
         );
     }
 
-    function completePromiseAsSharingUser(uint256 _promiseId) public {
+    function completePromiseAsSharingUser(
+        uint256 _promiseId,
+        string memory _imgHash
+    ) public {
         uint256 _userId = userIdByAddr[msg.sender];
         require(_promiseId != 0 && _promiseId <= promisesCount);
         require(_userId != 0 && _userId <= usersCount);
@@ -187,18 +188,23 @@ contract PinkyPromise {
             promises[_promiseId].expiresIn == 0 ||
                 promises[_promiseId].expiresIn >= now
         );
-        require(!promises[_promiseId].completedBySharingUser);
+        require(promises[_promiseId].completedBySharingUserAt == 0);
+        require(bytes(_imgHash).length > 0);
 
-        promises[_promiseId].completedBySharingUser = true;
         promises[_promiseId].completedBySharingUserAt = now;
+        promises[_promiseId].sharingUserImgHash = _imgHash;
 
         emit PinkyPromiseCompletedBySharingUser(
             _promiseId,
-            promises[_promiseId].completedBySharingUserAt
+            promises[_promiseId].completedBySharingUserAt,
+            _imgHash
         );
     }
 
-    function completePromiseAsReceivingUser(uint256 _promiseId) public {
+    function completePromiseAsReceivingUser(
+        uint256 _promiseId,
+        string memory _imgHash
+    ) public {
         uint256 _userId = userIdByAddr[msg.sender];
         require(_promiseId != 0 && _promiseId <= promisesCount);
         require(_userId != 0 && _userId <= usersCount);
@@ -207,14 +213,16 @@ contract PinkyPromise {
             promises[_promiseId].expiresIn == 0 ||
                 promises[_promiseId].expiresIn >= now
         );
-        require(!promises[_promiseId].completedByReceivingUser);
+        require(promises[_promiseId].completedByReceivingUserAt == 0);
+        require(bytes(_imgHash).length > 0);
 
-        promises[_promiseId].completedByReceivingUser = true;
         promises[_promiseId].completedByReceivingUserAt = now;
+        promises[_promiseId].receivingUserImgHash = _imgHash;
 
         emit PinkyPromiseCompletedByReceivingUser(
             _promiseId,
-            promises[_promiseId].completedByReceivingUserAt
+            promises[_promiseId].completedByReceivingUserAt,
+            _imgHash
         );
     }
 

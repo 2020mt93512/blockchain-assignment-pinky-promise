@@ -59,6 +59,7 @@ contract("PinkyPromise", accounts => {
 	});
 
 	describe('promises management', async () => {
+		const hash = 'Qmbft27iUMBiyKXg1uPUHgqeGGmsiWkNnYCrpdmDgcM84h';
 		let futureTimeStamp, result;
 
 		before(async () => {
@@ -79,12 +80,12 @@ contract("PinkyPromise", accounts => {
 			assert.equal(firstPromise.title, 'promise title 1');
 			assert.equal(firstPromise.description, 'promise description 1');
 			assert.equal(firstPromise.sharingUserId.toNumber(), 1);
-			assert.equal(firstPromise.completedBySharingUser, false);
 			assert.equal(firstPromise.completedBySharingUserAt.toNumber(), 0);
 			assert.equal(firstPromise.receivingUserId.toNumber(), 2);
-			assert.equal(firstPromise.completedByReceivingUser, false);
 			assert.equal(firstPromise.completedByReceivingUserAt.toNumber(), 0);
 			assert.equal(firstPromise.expiresIn.toNumber(), futureTimeStamp);
+			assert.equal(firstPromise.sharingUserImgHash, '');
+			assert.equal(firstPromise.receivingUserImgHash, '');
 
 			user = await pinkyPromiseInstance.users(1);
 			assert.equal(user.totalPromises, 2);
@@ -96,10 +97,8 @@ contract("PinkyPromise", accounts => {
 			assert.equal(event.title, 'promise title 1');
 			assert.equal(event.description, 'promise description 1');
 			assert.equal(event.sharingUserId.toNumber(), 1);
-			assert.equal(event.completedBySharingUser, false);
 			assert.equal(event.completedBySharingUserAt.toNumber(), 0);
 			assert.equal(event.receivingUserId.toNumber(), 2);
-			assert.equal(event.completedByReceivingUser, false);
 			assert.equal(event.completedByReceivingUserAt.toNumber(), 0);
 			assert.equal(event.expiresIn.toNumber(), futureTimeStamp);
 		});
@@ -126,27 +125,29 @@ contract("PinkyPromise", accounts => {
 		});
 
 		it('should complete a promise as the sharing user', async () => {
-			result = await pinkyPromiseInstance.completePromiseAsSharingUser(1, { from: accounts[0] });
+			result = await pinkyPromiseInstance.completePromiseAsSharingUser(1, hash, { from: accounts[0] });
 			const promise1 = await pinkyPromiseInstance.promises(1);
-			assert.equal(promise1.completedBySharingUser, true);
+			assert.equal(promise1.sharingUserImgHash, hash);
 			assert.notEqual(promise1.completedBySharingUserAt.toNumber(), 0);
 
 			const event = result.logs[0].args;
 			assert.equal(result.logs[0].event, 'PinkyPromiseCompletedBySharingUser');
 			assert.equal(event.promiseId.toNumber(), 1);
 			assert.notEqual(event.completedBySharingUserAt.toNumber(), 0);
+			assert.equal(event.imgHash, hash);
 		});
 
 		it('should complete a promise as the receiving user', async () => {
-			result = await pinkyPromiseInstance.completePromiseAsReceivingUser(1, { from: accounts[1] });
+			result = await pinkyPromiseInstance.completePromiseAsReceivingUser(1, hash, { from: accounts[1] });
 			const promise1 = await pinkyPromiseInstance.promises(1);
-			assert.equal(promise1.completedByReceivingUser, true);
+			assert.equal(promise1.receivingUserImgHash, hash);
 			assert.notEqual(promise1.completedByReceivingUserAt.toNumber(), 0);
 
 			const event = result.logs[0].args;
 			assert.equal(result.logs[0].event, 'PinkyPromiseCompletedByReceivingUser');
 			assert.equal(event.promiseId.toNumber(), 1);
 			assert.notEqual(event.completedByReceivingUserAt.toNumber(), 0);
+			assert.equal(event.imgHash, hash);
 		});
 	});
 });

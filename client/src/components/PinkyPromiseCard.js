@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as moment from 'moment';
-import { Stack, Box, Card, CardContent, Typography, CardActions, IconButton} from '@mui/material';
+import { Stack, Box, Card, CardContent, CardMedia, Typography, CardActionArea, CardActions, IconButton,
+	Collapse } from '@mui/material';
 import { green, red, blue, orange } from '@mui/material/colors';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DoneIcon from '@mui/icons-material/Done';
@@ -32,64 +33,82 @@ const PinkyPromiseCard = ({
 	createdAt,
 	sharingUserId,
 	receivingUserId,
-	completedBySharingUser,
-	completedByReceivingUser,
 	completedBySharingUserAt,
 	completedByReceivingUserAt,
 	userId,
-	completePromise,
+	onClickCompletePromise,
 	expiresIn,
+	sharingUserImgHash,
+	receivingUserImgHash,
 	sharingUserName,
 	receivingUserName
 }) => {
+	const [expand, setExpand] = React.useState(false);
+	const [receivingUserExpanded, setReceivingUserExpanded] = React.useState(false);
+
+  const handleExpandClick = React.useCallback(() => {
+    setExpand(oldExpanded => !oldExpanded);
+  }, []);
+
 	const expiresInAgo = !Number.isNaN(expiresIn) && expiresIn !== 0 ? moment(new Date(expiresIn)).fromNow() : '0';
 	const hasExpired = expiresIn !== 0 && Date.now() - expiresIn >= 0;
 	const canUserMarkComplete = !hasExpired && (userId === sharingUserId || userId === receivingUserId);
 	const userMarkedComplete = userId === sharingUserId ?
-		completedBySharingUser
+		!!completedBySharingUserAt
 		: userId === receivingUserId ?
-			completedByReceivingUser : false;
+			!!completedByReceivingUserAt : false;
 	const otherUserMarkedComplete = userId === sharingUserId ?
-		completedByReceivingUser
+		!!completedByReceivingUserAt
 		: userId === receivingUserId ?
-			completedBySharingUser : false;
+			!!completedBySharingUserAt : false;
 	const sharingUserCompletedAgo = completedBySharingUserAt !== 0 ?
 		moment(new Date(completedBySharingUserAt)).fromNow() : '0';
 	const receivingUserCompletedAgo = completedByReceivingUserAt !== 0 ?
 		moment(new Date(completedByReceivingUserAt)).fromNow() : '0';
-	const isComplete = completedBySharingUser && completedByReceivingUser;
+	const isComplete = !!completedBySharingUserAt && !!completedByReceivingUserAt;
 
 	const border = getBorderColor(hasExpired, userMarkedComplete, otherUserMarkedComplete, isComplete);
 
   return (
 		<Box marginBottom={2} style={{ opacity: isComplete || hasExpired ? 0.6 : 1 }}>
 			<Card sx={{ minWidth: 500, border }}>
-				<CardContent>
-					<Stack direction="row" justifyContent="space-between">
-						<Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-							Pinky Promise
-						</Typography>
+				<CardActionArea
+					disabled={!(
+						(completedBySharingUserAt && sharingUserCompletedAgo !== '0') ||
+						(completedByReceivingUserAt && receivingUserCompletedAgo !== '0')
+					)}
+					onClick={handleExpandClick}
+				>
+					<CardContent>
+						<Stack direction="row" justifyContent="space-between">
+							<Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+								Pinky Promise
+							</Typography>
+							<Typography variant="h5" component="div">
+								#{id}
+							</Typography>
+						</Stack>
 						<Typography variant="h5" component="div">
-							#{id}
+							{title}
 						</Typography>
-					</Stack>
-					<Typography variant="h5" component="div">
-						{title}
-					</Typography>
-					<Typography sx={{ mb: 1.5, fontSize: 12 }} color="text.secondary">
-						{moment(new Date(createdAt)).fromNow()}
-					</Typography>
-					<Typography variant="body2">
-						{description}
-					</Typography>
-				</CardContent>
+						<Typography sx={{ mb: 1.5, fontSize: 12 }} color="text.secondary">
+							{moment(new Date(createdAt)).fromNow()}
+						</Typography>
+						<Typography variant="body2">
+							{description}
+						</Typography>
+					</CardContent>
+				</CardActionArea>
 				<CardActions disableSpacing>
 					<Stack direction="row" spacing={2} paddingLeft={1}>
 						<Stack direction="column" justifyContent="center">
 							<Typography sx={{ fontSize: 12 }} color="text.secondary">
 								{sharingUserName ? sharingUserName : 'You'}
 							</Typography>
-							<Typography sx={{ fontSize: 10 }} color={completedBySharingUserAt && sharingUserCompletedAgo !== '0' ? green[500] : red[500]}>
+							<Typography
+								sx={{ fontSize: 10 }}
+								color={completedBySharingUserAt && sharingUserCompletedAgo !== '0' ? green[500] : red[500]}
+							>
 								{completedBySharingUserAt && sharingUserCompletedAgo !== '0' ?
 									sharingUserCompletedAgo : 'Not completed yet'
 								}
@@ -100,7 +119,10 @@ const PinkyPromiseCard = ({
 							<Typography sx={{ fontSize: 12 }} color="text.secondary">
 								{receivingUserName ? receivingUserName : 'You'}
 							</Typography>
-							<Typography sx={{ fontSize: 10 }} color={completedByReceivingUserAt && receivingUserCompletedAgo !== '0' ? green[500] : red[500] }>
+							<Typography
+								sx={{ fontSize: 10 }}
+								color={completedByReceivingUserAt && receivingUserCompletedAgo !== '0' ? green[500] : red[500] }
+							>
 								{completedByReceivingUserAt && receivingUserCompletedAgo !== '0' ?
 									receivingUserCompletedAgo : 'Not completed yet'
 								}
@@ -131,7 +153,7 @@ const PinkyPromiseCard = ({
 							<IconButton
 								sx={{ marginLeft: 'auto' }}
 								color="default"
-								onClick={() => completePromise(id, userId === sharingUserId)}
+								onClick={() => onClickCompletePromise(id, userId === sharingUserId)}
 								aria-label="mark-complete"
 							>
 								<DoneIcon />
@@ -143,6 +165,37 @@ const PinkyPromiseCard = ({
 						) : null
 					)}
 				</CardActions>
+
+				<Collapse in={expand} timeout="auto" unmountOnExit>
+					<CardContent>
+						{sharingUserImgHash && (
+							<Stack spacing={0.5} padding={0.5}>
+								<Typography variant="caption" color="text.secondary">
+									Completed Pinky Promise of {sharingUserName ?? 'You'}
+								</Typography>
+								<CardMedia
+									component="img"
+									height="194"
+									image={`https://ipfs.infura.io/ipfs/${sharingUserImgHash}`}
+									alt="Sharing user promise completed"
+								/>
+							</Stack>
+						)}
+						{receivingUserImgHash && (
+							<Stack spacing={0.5} padding={0.5}>
+								<Typography variant="caption" color="text.secondary">
+									Completed Pinky Promise of {receivingUserName ?? 'You'}
+								</Typography>
+								<CardMedia
+									component="img"
+									height="194"
+									image={`https://ipfs.infura.io/ipfs/${receivingUserImgHash}`}
+									alt="Receiving user promise completed"
+								/>
+							</Stack>
+						)}
+					</CardContent>
+				</Collapse>
 			</Card>
 		</Box>
   );

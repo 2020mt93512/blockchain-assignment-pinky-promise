@@ -8,6 +8,7 @@ import ViewMyPromises from './ViewMyPromises';
 import AddPromiseModal from './AddPromiseModal';
 import GlobalState from '../utils/GlobalState';
 import { PinkyPromiseContext } from '../context/PinkyPromiseContext';
+import CompletePromiseModal from './CompletePromiseModal';
 
 const a11yProps = (index) => ({
 	id: `simple-tab-${index}`,
@@ -16,7 +17,7 @@ const a11yProps = (index) => ({
 
 class Dashboard extends Component {
 	static contextType = PinkyPromiseContext;
-	state = { currentTabIdx : 0, addPromiseFormOpen: false };
+	state = { currentTabIdx : 0, addPromiseFormOpen: false, completePromiseFormOpen: false, completingPromiseId: null, isSharingUserCompleting: false };
 
 	addNewPromise = async (title, description, receivingUserId, expiresIn) => {
 		const contract = GlobalState.getContract();
@@ -29,14 +30,18 @@ class Dashboard extends Component {
     }
 	}
 
-	completePromise = async (promiseId, isSharingUser) => {
+	completePromise = async (imgHash) => {
 		const contract = GlobalState.getContract();
+		console.log(this.state);
 		try {
-			if (isSharingUser) {
-				await contract.methods.completePromiseAsSharingUser(promiseId).send({ from: GlobalState.getAccount() });
+			if (this.state.isSharingUserCompleting) {
+				await contract.methods.completePromiseAsSharingUser(this.state.completingPromiseId, imgHash)
+					.send({ from: GlobalState.getAccount() });
 			} else {
-				await contract.methods.completePromiseAsReceivingUser(promiseId).send({ from: GlobalState.getAccount() });
+				await contract.methods.completePromiseAsReceivingUser(this.state.completingPromiseId, imgHash)
+					.send({ from: GlobalState.getAccount() });
 			}
+			this.handleCompletePromiseFormClose();
     } catch (error) {
       console.error(error);
     }
@@ -46,15 +51,22 @@ class Dashboard extends Component {
     this.setState({ currentTabIdx: newValue });
   };
 
-	handleAddPromiseFormOpen = () => {
-		this.context.getUsersList().then(() => {
-			this.setState({ addPromiseFormOpen: true });
-		});
+	handleAddPromiseFormOpen = async () => {
+		await this.context.getUsersList();
+		this.setState({ addPromiseFormOpen: true });
 	};
 
 	handleAddPromiseFormClose = () => {
 		this.setState({ addPromiseFormOpen: false });
 	};
+
+	onClickCompletePromise = (promiseId, isSharingUser) => {
+		this.setState({ completePromiseFormOpen: true, completingPromiseId: promiseId, isSharingUserCompleting: isSharingUser });
+	}
+
+	handleCompletePromiseFormClose = () => {
+		this.setState({ completePromiseFormOpen: false });
+	}
 
 	render() {
 		return (
@@ -74,16 +86,21 @@ class Dashboard extends Component {
 						</Tabs>
 					</Box>
 					<TabPanel value={this.state.currentTabIdx} index={0}>
-						<ViewMyPromises {...this.props} completePromise={this.completePromise} />
+						<ViewMyPromises {...this.props} onClickCompletePromise={this.onClickCompletePromise} />
 					</TabPanel>
 					<TabPanel value={this.state.currentTabIdx} index={1}>
-						<ViewAllPromises {...this.props} completePromise={this.completePromise} />
+						<ViewAllPromises {...this.props} onClickCompletePromise={this.onClickCompletePromise} />
 					</TabPanel>
 				</Stack>
 				<Fab color="primary" aria-label="add" sx={{ position: 'absolute', right: 16, bottom: 16 }} onClick={this.handleAddPromiseFormOpen}>
 					<AddIcon />
 				</Fab>
-				<AddPromiseModal open={this.state.addPromiseFormOpen} handleAddPromiseFormClose={this.handleAddPromiseFormClose} addNewPromise={this.addNewPromise} />
+				<AddPromiseModal open={this.state.addPromiseFormOpen} onClickClose={this.handleAddPromiseFormClose} onClickOk={this.addNewPromise} />
+				<CompletePromiseModal
+					open={this.state.completePromiseFormOpen}
+					onClickClose={this.handleCompletePromiseFormClose}
+					onClickOk={this.completePromise}
+				/>
 			</Box>
 		)
 	}

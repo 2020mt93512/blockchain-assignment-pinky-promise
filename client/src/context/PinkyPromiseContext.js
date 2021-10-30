@@ -100,7 +100,7 @@ const PinkyPromiseProvider = ({ children }) => {
 
 		contract.events.PinkyPromiseCompletedBySharingUser({ fromBlock: 0 }).on('data', (event) => {
 			console.log('"PinkyPromiseCompletedBySharingUser" Event received: ', event.returnValues);
-			const { promiseId, completedBySharingUserAt } = event.returnValues;
+			const { promiseId, completedBySharingUserAt, imgHash } = event.returnValues;
 			setState(oldState => {
 				const { allPromises, myPromises } = oldState;
 				const allPromiseItemIdx = allPromises.findIndex(item => item.id === +promiseId);
@@ -111,16 +111,16 @@ const PinkyPromiseProvider = ({ children }) => {
 					if (allPromiseItemIdx !== -1) {
 						const newPromise = {
 							...newAllPromises[allPromiseItemIdx],
-							completedBySharingUser: true,
-							completedBySharingUserAt: (+completedBySharingUserAt * 1000)
+							completedBySharingUserAt: (+completedBySharingUserAt * 1000),
+							sharingUserImgHash: imgHash
 						};
 						newAllPromises.splice(allPromiseItemIdx, 1, newPromise);
 					}
 					if (myPromiseItemIdx !== -1) {
 						const newPromise = {
 							...newMyPromises[myPromiseItemIdx],
-							completedBySharingUser: true,
-							completedBySharingUserAt: (+completedBySharingUserAt * 1000)
+							completedBySharingUserAt: (+completedBySharingUserAt * 1000),
+							sharingUserImgHash: imgHash
 						};
 						newMyPromises.splice(myPromiseItemIdx, 1, newPromise);
 					}
@@ -132,7 +132,7 @@ const PinkyPromiseProvider = ({ children }) => {
 
 		contract.events.PinkyPromiseCompletedByReceivingUser({ fromBlock: 0 }).on('data', (event) => {
 			console.log('"PinkyPromiseCompletedByReceivingUser" Event received: ', event.returnValues);
-			const { promiseId, completedByReceivingUserAt } = event.returnValues;
+			const { promiseId, completedByReceivingUserAt, imgHash } = event.returnValues;
 			setState(oldState => {
 				const { allPromises, myPromises } = oldState;
 				const allPromiseItemIdx = allPromises.findIndex(item => item.id === +promiseId);
@@ -143,16 +143,16 @@ const PinkyPromiseProvider = ({ children }) => {
 					if (allPromiseItemIdx !== -1) {
 						const newPromise = {
 							...newAllPromises[allPromiseItemIdx],
-							completedByReceivingUser: true,
-							completedByReceivingUserAt: (+completedByReceivingUserAt) * 1000
+							completedByReceivingUserAt: (+completedByReceivingUserAt) * 1000,
+							receivingUserImgHash: imgHash
 						};
 						newAllPromises.splice(allPromiseItemIdx, 1, newPromise);
 					}
 					if (myPromiseItemIdx !== -1) {
 						const newPromise = {
 							...newMyPromises[myPromiseItemIdx],
-							completedByReceivingUser: true,
-							completedByReceivingUserAt: (+completedByReceivingUserAt) * 1000
+							completedByReceivingUserAt: (+completedByReceivingUserAt) * 1000,
+							receivingUserImgHash: imgHash
 						};
 						newMyPromises.splice(myPromiseItemIdx, 1, newPromise);
 					}
