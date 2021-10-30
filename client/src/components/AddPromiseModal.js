@@ -11,6 +11,10 @@ class AddPromiseModal extends Component {
 	static contextType = PinkyPromiseContext;
 	state = { title: '', description: '', receivingUserId: '', expiresIn: null };
 
+	async componentDidMount() {
+		await this.context.getUsersList();
+	}
+
 	onTitleChange = (event) => {
 		this.setState({ title: event.target.value });
 	}
@@ -28,7 +32,7 @@ class AddPromiseModal extends Component {
 	}
 
 	handleClick = async () => {
-		await this.props.addNewPromise(this.state.title, this.state.description, this.state.receivingUserId, this.state.expiresIn);
+		await this.props.onClickOk(this.state.title, this.state.description, this.state.receivingUserId, this.state.expiresIn);
 		this.setState({ title: '', description: '', receivingUserId: 0, expiresIn: null });
 	}
 
@@ -36,7 +40,7 @@ class AddPromiseModal extends Component {
 		return (
 			<Modal
 					open={this.props.open}
-					onClose={this.props.handleAddPromiseFormClose}
+					onClose={this.props.onClickClose}
 					aria-labelledby="add-promise"
 				>
 					<Box sx={{

@@ -22,7 +22,7 @@ class ViewMyPromises extends Component {
 					userId={this.context.user.id}
 					sharingUserName={this.getUserNameFromId(promiseItem.sharingUserId)}
 					receivingUserName={this.getUserNameFromId(promiseItem.receivingUserId)}
-					completePromise={this.props.completePromise}
+					onClickCompletePromise={this.props.onClickCompletePromise}
 				/>
 			))
 		) : (
