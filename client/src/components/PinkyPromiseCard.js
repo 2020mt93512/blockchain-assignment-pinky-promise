@@ -1,12 +1,29 @@
 import * as React from 'react';
 import * as moment from 'moment';
 import { Stack, Box, Card, CardContent, Typography, CardActions, IconButton} from '@mui/material';
-import { green, red } from '@mui/material/colors';
+import { green, red, blue, orange } from '@mui/material/colors';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DoneIcon from '@mui/icons-material/Done';
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 import TimerIcon from '@mui/icons-material/Timer';
 import TimerOffIcon from '@mui/icons-material/TimerOff';
+
+const getBorderColor = (hasExpired, userMarkedComplete, otherUserMarkedComplete, isComplete) => {
+	if (hasExpired) {
+		return `2px solid ${red.A700}`;
+	}
+	if (isComplete) {
+		return `2px solid ${green.A700}`;
+	}
+	if (!userMarkedComplete && otherUserMarkedComplete) {
+		return `2px solid ${orange[300]}`;
+	}
+	if (userMarkedComplete && !otherUserMarkedComplete) {
+		return `2px solid ${blue.A700}`;
+	}
+
+	return null;
+};
 
 const PinkyPromiseCard = ({
 	id,
@@ -21,7 +38,9 @@ const PinkyPromiseCard = ({
 	completedByReceivingUserAt,
 	userId,
 	completePromise,
-	expiresIn
+	expiresIn,
+	sharingUserName,
+	receivingUserName
 }) => {
 	const expiresInAgo = !Number.isNaN(expiresIn) && expiresIn !== 0 ? moment(new Date(expiresIn)).fromNow() : '0';
 	const hasExpired = expiresIn !== 0 && Date.now() - expiresIn >= 0;
@@ -30,15 +49,21 @@ const PinkyPromiseCard = ({
 		completedBySharingUser
 		: userId === receivingUserId ?
 			completedByReceivingUser : false;
+	const otherUserMarkedComplete = userId === sharingUserId ?
+		completedByReceivingUser
+		: userId === receivingUserId ?
+			completedBySharingUser : false;
 	const sharingUserCompletedAgo = completedBySharingUserAt !== 0 ?
 		moment(new Date(completedBySharingUserAt)).fromNow() : '0';
 	const receivingUserCompletedAgo = completedByReceivingUserAt !== 0 ?
 		moment(new Date(completedByReceivingUserAt)).fromNow() : '0';
 	const isComplete = completedBySharingUser && completedByReceivingUser;
 
+	const border = getBorderColor(hasExpired, userMarkedComplete, otherUserMarkedComplete, isComplete);
+
   return (
 		<Box marginBottom={2} style={{ opacity: isComplete || hasExpired ? 0.6 : 1 }}>
-			<Card sx={{ minWidth: 500 }}>
+			<Card sx={{ minWidth: 500, border }}>
 				<CardContent>
 					<Stack direction="row" justifyContent="space-between">
 						<Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
@@ -62,7 +87,7 @@ const PinkyPromiseCard = ({
 					<Stack direction="row" spacing={2} paddingLeft={1}>
 						<Stack direction="column" justifyContent="center">
 							<Typography sx={{ fontSize: 12 }} color="text.secondary">
-								Sharing user
+								{sharingUserName ? sharingUserName : 'You'}
 							</Typography>
 							<Typography sx={{ fontSize: 10 }} color={completedBySharingUserAt && sharingUserCompletedAgo !== '0' ? green[500] : red[500]}>
 								{completedBySharingUserAt && sharingUserCompletedAgo !== '0' ?
@@ -73,7 +98,7 @@ const PinkyPromiseCard = ({
 						<DoubleArrowIcon />
 						<Stack direction="column" justifyContent="center">
 							<Typography sx={{ fontSize: 12 }} color="text.secondary">
-								Receiving User
+								{receivingUserName ? receivingUserName : 'You'}
 							</Typography>
 							<Typography sx={{ fontSize: 10 }} color={completedByReceivingUserAt && receivingUserCompletedAgo !== '0' ? green[500] : red[500] }>
 								{completedByReceivingUserAt && receivingUserCompletedAgo !== '0' ?

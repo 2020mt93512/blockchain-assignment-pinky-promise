@@ -53,21 +53,21 @@ contract PinkyPromise {
      *
      **************************************************************************/
     event PinkyUserRecordAdded(
-        uint256 id,
-        address addr,
+        uint256 indexed id,
+        address indexed addr,
         string name,
         uint256 totalPromises
     );
 
     event PinkyPromiseRecordAdded(
-        uint256 id,
+        uint256 indexed id,
         string title,
         string description,
         uint256 createdAt,
-        uint256 sharingUserId,
+        uint256 indexed sharingUserId,
         bool completedBySharingUser,
         uint256 completedBySharingUserAt,
-        uint256 receivingUserId,
+        uint256 indexed receivingUserId,
         bool completedByReceivingUser,
         uint256 completedByReceivingUserAt,
         uint256 expiresIn
@@ -97,6 +97,7 @@ contract PinkyPromise {
 
     function addUser(string memory _name) public {
         require(msg.sender != address(0));
+        require(userIdByAddr[msg.sender] == 0);
 
         usersCount++;
         users[usersCount] = PinkyUserRecord(usersCount, msg.sender, _name, 0);
@@ -182,7 +183,10 @@ contract PinkyPromise {
         require(_promiseId != 0 && _promiseId <= promisesCount);
         require(_userId != 0 && _userId <= usersCount);
         require(promises[_promiseId].sharingUserId == _userId);
-        require(promises[_promiseId].expiresIn >= now);
+        require(
+            promises[_promiseId].expiresIn == 0 ||
+                promises[_promiseId].expiresIn >= now
+        );
         require(!promises[_promiseId].completedBySharingUser);
 
         promises[_promiseId].completedBySharingUser = true;
@@ -199,7 +203,10 @@ contract PinkyPromise {
         require(_promiseId != 0 && _promiseId <= promisesCount);
         require(_userId != 0 && _userId <= usersCount);
         require(promises[_promiseId].receivingUserId == _userId);
-        require(promises[_promiseId].expiresIn >= now);
+        require(
+            promises[_promiseId].expiresIn == 0 ||
+                promises[_promiseId].expiresIn >= now
+        );
         require(!promises[_promiseId].completedByReceivingUser);
 
         promises[_promiseId].completedByReceivingUser = true;

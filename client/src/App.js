@@ -3,15 +3,17 @@ import { AppBar, Toolbar, Box, Typography, CircularProgress } from '@mui/materia
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 import PinkyPromiseContract from "./contracts/PinkyPromise.json";
+import GlobalState from "./utils/GlobalState";
 import getWeb3 from "./getWeb3";
-import { PinkyUserRecord } from "./models/PinkyUserRecord";
+import { PinkyPromiseContext, PinkyPromiseProvider } from "./context/PinkyPromiseContext";
 
 import NewUser from './components/NewUser';
 import { Dashboard } from "./components/Dashboard";
 import "./App.css";
 
 class App extends Component {
-  state = { web3: null, accounts: null, contract: null, account: null, pinkyUser: null };
+	static contextType = PinkyPromiseContext;
+  state = { web3: null, accounts: null, contract: null, account: null };
 
   componentDidMount = async () => {
     try {
@@ -21,19 +23,22 @@ class App extends Component {
       // Use web3 to get the user's accounts.
       const accounts = await web3.eth.getAccounts();
 
-
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = PinkyPromiseContract.networks[networkId];
       const instance = new web3.eth.Contract(
         PinkyPromiseContract.abi,
         deployedNetwork && deployedNetwork.address,
-        );
+      );
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       web3.eth.getCoinbase((err, account) => {
         if (err === null) {
+          GlobalState.setWeb3(web3);
+          GlobalState.setAccounts(accounts);
+          GlobalState.setAccount(account);
+          GlobalState.setContract(instance);
           this.setState({ web3, accounts, account, contract: instance }, this.initApp);
         }
       });
@@ -44,30 +49,8 @@ class App extends Component {
     }
   };
 
-  initApp = async () => {
-    const { contract } = this.state;
-    try {
-      const response = await contract.methods.getCurrentUser().call({ from: this.state.account });
-      const user = PinkyUserRecord.toJson(response);
-      if (user.id !== 0) {
-        this.setState({ pinkyUser: user });
-      } else {
-        this.setState({ pinkyUser: null });
-      }
-    } catch (error) {
-      console.error(error);
-      this.setState({ pinkyUser: null });
-    } finally {
-    }
-  }
-
-  addNewUser = async (name) => {
-    const { contract } = this.state;
-    try {
-      await contract.methods.addUser(name).send({ from: this.state.account });
-    } catch (error) {
-      console.error(error);
-    }
+  initApp = () => {
+    this.context.getCurrentUser();
   }
 
   render() {
@@ -90,9 +73,9 @@ class App extends Component {
               </span>
             </Toolbar>
           </AppBar>
-          {this.state.pinkyUser ?
-            <Dashboard account={this.state.account} user={this.state.pinkyUser} web3={this.state.web3} contract={this.state.contract} /> :
-            <NewUser addNewUser={this.addNewUser} />
+          {this.context.user ?
+            <Dashboard /> :
+            !this.context.loading ? <NewUser /> : null
           }
         </>)}
       </Box>
@@ -100,4 +83,10 @@ class App extends Component {
   }
 }
 
-export default App;
+const RootApp = () => (
+  <PinkyPromiseProvider>
+    <App />
+  </PinkyPromiseProvider>
+)
+
+export default RootApp;

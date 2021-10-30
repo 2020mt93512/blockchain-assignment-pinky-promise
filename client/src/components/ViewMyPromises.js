@@ -1,34 +1,27 @@
 import React, { Component } from 'react';
 import { Box, Stack, Typography } from '@mui/material'
 
-import { PinkyPromiseRecord } from '../models/PinkyPromiseRecord';
+import { PinkyPromiseContext } from '../context/PinkyPromiseContext';
 
 import PinkyPromiseCard from './PinkyPromiseCard';
 
 class ViewMyPromises extends Component {
-	state = { promisesList: [] };
+	static contextType = PinkyPromiseContext;
 
-	componentDidMount() {
-		this.getMyPinkyPromises();
-	}
-
-	getMyPinkyPromises = async () => {
-		const { contract } = this.props;
-		try {
-      const response = await contract.methods.getPromisesByUserId().call({ from: this.props.account });
-      this.setState({ promisesList: response.map(PinkyPromiseRecord.toJson) });
-    } catch (error) {
-      console.error(error);
-    }
+	getUserNameFromId = (id) => {
+		const userItem = this.context.usersList.find(item => item.id === id);
+		return userItem ? userItem.name : null;
 	}
 
 	render() {
-		return this.state.promisesList.length > 0 ?
-			(this.state.promisesList.map(promiseItem => (
+		return this.context.myPromises.length > 0 ?
+			(this.context.myPromises.sort((a, b) => b.id - a.id).map(promiseItem => (
 				<PinkyPromiseCard
 					key={promiseItem.id}
 					{...promiseItem}
-					userId={this.props.user.id}
+					userId={this.context.user.id}
+					sharingUserName={this.getUserNameFromId(promiseItem.sharingUserId)}
+					receivingUserName={this.getUserNameFromId(promiseItem.receivingUserId)}
 					completePromise={this.props.completePromise}
 				/>
 			))

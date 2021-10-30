@@ -1,13 +1,26 @@
 import React, { Component } from "react";
-
 import { TextField, Typography, Button, Stack, Box } from '@mui/material';
 
+import GlobalState from "../utils/GlobalState";
+import { PinkyPromiseContext } from "../context/PinkyPromiseContext";
+
 class NewUser extends Component {
+	static contextType = PinkyPromiseContext;
 	state = { name: '' };
 
 	onNameChange = (event) => {
 		this.setState({ name: event.target.value });
 	}
+
+	addNewUser = async () => {
+    const contract = GlobalState.getContract();
+    try {
+      await contract.methods.addUser(this.state.name).send({ from: GlobalState.getAccount() });
+			await this.context.getCurrentUser();
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
 	render() {
 		return (
@@ -24,7 +37,7 @@ class NewUser extends Component {
 								value={this.state.name}
 								onChange={this.onNameChange}
 							/>
-							<Button variant="contained" onClick={() => this.props.addNewUser(this.state.name)}>Join</Button>
+							<Button variant="contained" onClick={() => this.addNewUser()}>Join</Button>
 						</Stack>
 				</Stack>
 			</Box>
