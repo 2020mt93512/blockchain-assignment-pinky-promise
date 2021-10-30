@@ -9,6 +9,10 @@ A decentralized application (dApp) that helps you keep track of pinky promises a
 - Both people can view the images attached by each other.
 - Each promise can also be time-bound, beyond which neither user will be able to mark a promise as complete.
 
+A video demonstration of the application can be found [here](https://drive.google.com/file/d/1zPkkFuo96-2migOs6F3K-w_9fbyAsvLB/view?usp=sharing).
+
+*NOTE: Please use your BITS ID to open the above link.* 
+
 ## Table of Contents
 - [Pinky Promise](#pinky-promise)
 	- [Table of Contents](#table-of-contents)
@@ -24,6 +28,9 @@ A decentralized application (dApp) that helps you keep track of pinky promises a
 ![View incomplete promises](/examples/incomplete-promises.png?raw=true "View incomplete promises")
 ![Upload promise image](/examples/upload-promise-image.png?raw=true "Upload promise image")
 ![Completed pinky promises](/examples/completed-pinky-promises.png?raw=true "Completed pinky promises")
+
+## Project Diagram
+![Project diagram](/examples/pinky-promise-project-diagram.jpeg?raw=true "Project diagram")
 
 ## Setting up the environment
 - You need to have NodeJS installed (use the latest LTS version, but anything above 12.x.x should be good)
