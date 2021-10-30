@@ -121,7 +121,6 @@ const PinkyPromiseProvider = ({ children }) => {
 						};
 						newMyPromises.splice(myPromiseItemIdx, 1, newPromise);
 					}
-					console.log(allPromises, myPromises);
 					return { ...oldState, allPromises: newAllPromises, myPromises: newMyPromises };
 				}
 				return oldState;
