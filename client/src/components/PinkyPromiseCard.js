@@ -44,8 +44,6 @@ const PinkyPromiseCard = ({
 	receivingUserName
 }) => {
 	const [expand, setExpand] = React.useState(false);
-	const [receivingUserExpanded, setReceivingUserExpanded] = React.useState(false);
-
   const handleExpandClick = React.useCallback(() => {
     setExpand(oldExpanded => !oldExpanded);
   }, []);
@@ -71,7 +69,7 @@ const PinkyPromiseCard = ({
 
   return (
 		<Box marginBottom={2} style={{ opacity: isComplete || hasExpired ? 0.6 : 1 }}>
-			<Card sx={{ minWidth: 500, border }}>
+			<Card sx={{ minWidth: 620, border }}>
 				<CardActionArea
 					disabled={!(
 						(completedBySharingUserAt && sharingUserCompletedAgo !== '0') ||

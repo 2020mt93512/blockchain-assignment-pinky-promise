@@ -70,10 +70,10 @@ class Dashboard extends Component {
 
 	render() {
 		return (
-			<Box padding={8}>
+			<Box padding={4}>
 				<Stack spacing={2} direction="column" justifyContent="center" alignItems="center">
-					<Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
-            Hello, {this.context.user.name}
+					<Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
+            Hello, {this.context.user.name}!
           </Typography>
 					<Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
 						<Tabs

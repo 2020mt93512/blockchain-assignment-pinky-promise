@@ -28,7 +28,7 @@ class ViewAllPromises extends Component {
 		))
 
 		return this.context.allPromises.length > 0 ?
-			(<Box minWidth={500}>
+			(<Box minWidth={620}>
 				<Stack spacing={2} alignItems="flex-end">
 					<FormControlLabel
 						control={
